@@ -1,0 +1,72 @@
+- name: archive and delete a folder
+  hosts: localhost
+  gather_facts: false
+  tasks:
+   - name: check the V10.5 folder exists or not
+     stat:
+       path: /home/osboxes/ondemand/V10.5
+     register: verify_V10_5
+
+   - name: check the V10.1 folder exists or not
+     stat:
+       path: /home/osboxes/ondemand/V10.1
+     register: verify_V10_1
+
+   - name: Compress folder V9.5
+     ignore_errors: yes
+     become: yes
+     become_method: sudo
+     become_user: root
+     archive:
+       path: /home/osboxes/ondemand/V9.5
+       dest: /home/osboxes/ondemand/V9.5.tar
+
+   - name: Compress folder V10.1.disable
+     ignore_errors: yes
+     become: yes
+     become_method: sudo
+     become_user: root
+     archive:
+       path: /home/osboxes/ondemand/V10.1.disable
+       dest: /home/osboxes/ondemand/V10_1_disable.tar
+
+   - name: Compress folder V10.5
+     ignore_errors: yes
+     become: yes
+     become_method: sudo
+     become_user: root
+     archive:
+       path: /home/osboxes/ondemand/V10.5
+       dest: /home/osboxes/ondemand/V10.5.tar
+
+   - name: Compress folder V10.1
+     become: yes
+     become_method: sudo
+     become_user: root
+     archive:
+       path: /home/osboxes/ondemand/V10.1
+       dest: /home/osboxes/ondemand/V10.1.tar
+     register: tar  
+     when: verify_V10_5.stat.isdir and verify_V10_5.stat.isdir is defined and verify_V10_1.stat.isdir
+    
+    
+
+   - name: delete the folder
+     become: yes
+     become_method: sudo
+     become_user: root
+     file:
+       path: "/home/osboxes/ondemand/{{ item }}"
+       state: absent
+     with_items:
+         - "V10.1"
+         - "V9.5"
+     when: verify_V10_1.stat.isdir
+
+   - name: delete the folder
+     become: yes
+     become_method: sudo
+     become_user: root
+     file:
+       path: "/home/osboxes/ondemand/V10.1.disable"
+       state: absent
